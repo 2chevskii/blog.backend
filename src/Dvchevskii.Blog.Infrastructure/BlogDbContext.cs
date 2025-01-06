@@ -1,6 +1,7 @@
 ﻿using Dvchevskii.Blog.Entities.Authentication.Accounts;
 using Dvchevskii.Blog.Entities.Authentication.Users;
 using Dvchevskii.Blog.Entities.Common;
+using Dvchevskii.Blog.Entities.Files;
 using Dvchevskii.Blog.Entities.Posts;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -15,6 +16,7 @@ public sealed class BlogDbContext(DbContextOptions<BlogDbContext> options)
     public DbSet<PasswordAccount> PasswordAccounts => Set<PasswordAccount>();
     public DbSet<Post> Posts => Set<Post>();
     public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();
+    public DbSet<Image> Images => Set<Image>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
