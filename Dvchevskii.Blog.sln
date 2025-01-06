@@ -19,6 +19,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dvchevskii.Blog.Infrastruct
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dvchevskii.Blog.Shared.Contracts", "src\Dvchevskii.Blog.Shared.Contracts\Dvchevskii.Blog.Shared.Contracts.csproj", "{891E97C1-CBAF-4D41-AFC7-0086A79C0D65}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dvchevskii.Blog.Assets", "src\Dvchevskii.Blog.Assets\Dvchevskii.Blog.Assets.csproj", "{5D625C1D-99D4-4E6D-A15A-01CB2AADD6D8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -56,6 +58,10 @@ Global
 		{891E97C1-CBAF-4D41-AFC7-0086A79C0D65}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{891E97C1-CBAF-4D41-AFC7-0086A79C0D65}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{891E97C1-CBAF-4D41-AFC7-0086A79C0D65}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5D625C1D-99D4-4E6D-A15A-01CB2AADD6D8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5D625C1D-99D4-4E6D-A15A-01CB2AADD6D8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5D625C1D-99D4-4E6D-A15A-01CB2AADD6D8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5D625C1D-99D4-4E6D-A15A-01CB2AADD6D8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{5D983554-B0BD-4742-ABE1-B2283A70C308} = {E15B34D0-0214-4AAF-B87F-1F7AC7E55D0A}
@@ -65,5 +71,6 @@ Global
 		{6A9F3633-F6B4-4FE3-A8C4-F23173E2D648} = {E15B34D0-0214-4AAF-B87F-1F7AC7E55D0A}
 		{3ADF9BB7-F837-4EB9-8712-002B8D11673B} = {E15B34D0-0214-4AAF-B87F-1F7AC7E55D0A}
 		{891E97C1-CBAF-4D41-AFC7-0086A79C0D65} = {E15B34D0-0214-4AAF-B87F-1F7AC7E55D0A}
+		{5D625C1D-99D4-4E6D-A15A-01CB2AADD6D8} = {E15B34D0-0214-4AAF-B87F-1F7AC7E55D0A}
 	EndGlobalSection
 EndGlobal

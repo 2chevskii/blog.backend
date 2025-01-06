@@ -1,6 +1,7 @@
 ﻿using Dvchevskii.Blog.Admin.Models;
 using Dvchevskii.Blog.Entities.Posts;
 using Dvchevskii.Blog.Infrastructure;
+using Dvchevskii.Blog.Shared.Contracts.Assets.Images;
 using Dvchevskii.Blog.Shared.Contracts.Authentication.Context;
 using Dvchevskii.Blog.Shared.Contracts.Pagination;
 using Dvchevskii.Blog.Shared.Pagination;
@@ -13,7 +14,7 @@ internal class PostService(
     BlogDbContext dbContext,
     IAuthenticationScope authenticationScope,
     Sluggifier sluggifier,
-    ImageService imageService
+    IImageAssetService imageAssetService
 )
 {
     public async Task<PaginationQueryResult<PostInfoModel>> GetInfoList(int offset, int limit, bool includeNonPublished)
@@ -81,7 +82,7 @@ internal class PostService(
         var creator = await dbContext.Users.FirstAsync(x => x.Id == post.AuditInfo.CreatedBy);
 
         var headerImageUrl = post.HeaderImageId.HasValue
-            ? await imageService.GetPreSignedUrl(post.HeaderImageId.Value)
+            ? await imageAssetService.GetPreSignedUrl(post.HeaderImageId.Value)
             : null;
 
         return new PostEditModel(
@@ -130,7 +131,7 @@ internal class PostService(
         var updater = await dbContext.Users.FirstAsync(x => x.Id == post.AuditInfo.UpdatedBy!.Value);
 
         var headerImageUrl = post.HeaderImageId.HasValue
-            ? await imageService.GetPreSignedUrl(post.HeaderImageId.Value)
+            ? await imageAssetService.GetPreSignedUrl(post.HeaderImageId.Value)
             : null;
 
         return new PostEditModel(
