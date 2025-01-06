@@ -1,0 +1,6 @@
+@Dvchevskii.Blog.Reader_HostAddress = http://localhost:5192
+
+GET {{Dvchevskii.Blog.Reader_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

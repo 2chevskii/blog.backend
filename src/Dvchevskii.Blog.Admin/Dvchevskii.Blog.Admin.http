@@ -1,0 +1,6 @@
+@Dvchevskii.Blog.Admin_HostAddress = http://localhost:5107
+
+GET {{Dvchevskii.Blog.Admin_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
