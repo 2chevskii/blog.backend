@@ -22,6 +22,14 @@ internal class PostsController(PostService postService) : ControllerBase
         return result;
     }
 
+    [HttpGet("{id}")]
+    public async Task<PostEditModel> GetForEdit(Guid id)
+    {
+        var model = await postService.GetForEdit(id);
+
+        return model;
+    }
+
     [HttpPost]
     public async Task<PostEditModel> Create(CreatePostRequest request)
     {

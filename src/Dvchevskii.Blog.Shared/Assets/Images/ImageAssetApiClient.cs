@@ -1,7 +1,6 @@
 ﻿using System.Net;
 using System.Net.Http.Json;
 using Dvchevskii.Blog.Shared.Contracts.Assets.Images;
-using Microsoft.Extensions.Http;
 
 namespace Dvchevskii.Blog.Shared.Assets.Images;
 

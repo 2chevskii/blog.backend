@@ -38,6 +38,7 @@ internal sealed class LocalAuthService(
                 IsDeactivated = false,
                 UserId = default(Guid),
             },
+            AvatarImageId = null,
         };
 
         dbContext.Users.Add(user);

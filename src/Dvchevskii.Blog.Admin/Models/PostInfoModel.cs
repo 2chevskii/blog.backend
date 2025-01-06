@@ -8,5 +8,6 @@ public class PostInfoModel
     public bool IsPublished { get; set; }
     public PostAuthorInfo CreatedBy { get; set; }
     public PostAuthorInfo? UpdatedBy { get; set; }
+    public Guid? HeaderImageId { get; set; }
     public Uri? HeaderImageUrl { get; set; }
 }

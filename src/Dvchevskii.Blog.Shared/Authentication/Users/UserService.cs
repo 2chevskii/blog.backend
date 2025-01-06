@@ -14,6 +14,7 @@ internal class UserService(BlogDbContext dbContext)
             Username = dto.Username,
             IsAdmin = dto.IsAdmin,
             IsBanned = dto.IsBanned,
+            AvatarImageId = null,
         };
         dbContext.Add(user);
         await dbContext.SaveChangesAsync();

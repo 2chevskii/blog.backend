@@ -1,4 +1,5 @@
-﻿using Dvchevskii.Blog.Admin.Models;
+﻿using System.ComponentModel;
+using Dvchevskii.Blog.Admin.Models;
 using Dvchevskii.Blog.Entities.Posts;
 using Dvchevskii.Blog.Infrastructure;
 using Dvchevskii.Blog.Shared.Contracts.Assets.Images;
@@ -32,6 +33,7 @@ internal class PostService(
         }
 
         var paginationResult = await query
+            .OrderByDescending(x => x.AuditInfo.CreatedAt)
             .Select(post => new PostInfoModel
             {
                 Id = post.Id,
@@ -52,7 +54,16 @@ internal class PostService(
                         Username = dbContext.Users.First(x => x.Id == post.AuditInfo.UpdatedBy.Value).Username
                     }
                     : null,
+                HeaderImageId = post.HeaderImageId,
             }).ToPaginatedAsync(offset, limit);
+
+        foreach (var item in paginationResult.Items)
+        {
+            if (item.HeaderImageId.HasValue)
+            {
+                item.HeaderImageUrl = await imageAssetService.GetPreSignedUrl(item.HeaderImageId.Value);
+            }
+        }
 
         return paginationResult;
     }
@@ -153,6 +164,47 @@ internal class PostService(
                 Username = updater.Username,
                 Timestamp = post.AuditInfo.UpdatedAt!.Value,
             },
+            post.HeaderImageId,
+            headerImageUrl
+        );
+    }
+
+    public async Task<PostEditModel> GetForEdit(Guid id)
+    {
+        var post = await dbContext.Posts.FirstAsync(x => x.Id == id);
+        Uri? headerImageUrl = null;
+        if (post.HeaderImageId.HasValue)
+        {
+            headerImageUrl = await imageAssetService.GetPreSignedUrl(post.HeaderImageId.Value);
+        }
+
+        var creator = await dbContext.Users.FirstAsync(x => x.Id == post.AuditInfo.CreatedBy);
+        var updater = post.AuditInfo.UpdatedBy.HasValue
+            ? await dbContext.Users.FirstAsync(x => x.Id == post.AuditInfo.UpdatedBy!.Value)
+            : null;
+
+
+        return new PostEditModel(
+            post.Id,
+            post.Slug,
+            post.Title,
+            post.Tagline,
+            post.Body,
+            post.IsPublished,
+            new PostAuthorInfo
+            {
+                Id = creator.Id,
+                Username = creator.Username,
+                Timestamp = post.AuditInfo.CreatedAt,
+            },
+            updater != null
+                ? new PostAuthorInfo
+                {
+                    Id = updater.Id,
+                    Username = updater.Username,
+                    Timestamp = post.AuditInfo.UpdatedAt!.Value,
+                }
+                : null,
             post.HeaderImageId,
             headerImageUrl
         );

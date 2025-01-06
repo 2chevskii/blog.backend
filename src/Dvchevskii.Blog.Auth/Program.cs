@@ -1,5 +1,6 @@
 using Dvchevskii.Blog.Auth.Services;
 using Dvchevskii.Blog.Infrastructure;
+using Dvchevskii.Blog.Shared.Assets.Images;
 using Dvchevskii.Blog.Shared.Authentication;
 using Dvchevskii.Blog.Shared.Authentication.Context;
 using Dvchevskii.Blog.Shared.Authentication.Passwords;
@@ -31,6 +32,9 @@ builder.Services.AddPasswordHasher();
 builder.Services.AddSharedDataProtection();
 
 builder.Services.AddScoped<LocalAuthService>();
+builder.Services.AddScoped<UserProfileService>();
+
+builder.Services.AddImageAssetServices();
 
 var app = builder.Build();
 

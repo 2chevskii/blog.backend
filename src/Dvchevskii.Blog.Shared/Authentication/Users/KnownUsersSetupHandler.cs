@@ -48,6 +48,7 @@ internal class KnownUsersSetupHandler(
                     }
                     : null,
                 IsBanned = false,
+                AvatarImageId = null,
             };
             dbContext.Add(user);
         }
