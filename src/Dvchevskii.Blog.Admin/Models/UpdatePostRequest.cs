@@ -1,6 +1,7 @@
-namespace Dvchevskii.Blog.Admin.Models;
+﻿namespace Dvchevskii.Blog.Admin.Models;
 
-public record CreatePostRequest(
+public record UpdatePostRequest(
+    Guid Id,
     string Title,
     string? Tagline,
     string Body,

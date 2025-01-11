@@ -60,4 +60,11 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+app.UseCors(cors => cors.WithOrigins("http://localhost:3031")
+    .AllowCredentials()
+    .AllowAnyHeader()
+    .AllowAnyMethod()
+    .WithExposedHeaders("Location")
+);
+
 app.Run();

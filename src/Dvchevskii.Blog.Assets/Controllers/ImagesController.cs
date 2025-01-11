@@ -44,4 +44,12 @@ internal class ImagesController(ImageService imageService) : ControllerBase
 
         return url;
     }
+
+    [HttpPost("url-list")]
+    public async Task<Dictionary<Guid, Uri>> GetImageUrlList([FromBody] Guid[] ids)
+    {
+        var result = await imageService.GetPreSignedUrlList(ids);
+
+        return result;
+    }
 }

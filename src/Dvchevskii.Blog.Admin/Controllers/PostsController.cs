@@ -48,4 +48,11 @@ internal class PostsController(PostService postService) : ControllerBase
         var post = await postService.Update(request);
         return post;
     }
+
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Delete(Guid id)
+    {
+        await postService.Delete(id);
+        return Ok();
+    }
 }

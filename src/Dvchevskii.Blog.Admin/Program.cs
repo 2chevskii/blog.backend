@@ -1,5 +1,3 @@
-using Amazon.Runtime;
-using Amazon.S3;
 using Dvchevskii.Blog.Admin.Services;
 using Dvchevskii.Blog.Infrastructure;
 using Dvchevskii.Blog.Shared.Assets.Images;
@@ -50,5 +48,11 @@ app.UseAuthenticationContextSetter();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.UseCors(cors => cors.WithOrigins("http://localhost:3031")
+    .AllowCredentials()
+    .AllowAnyHeader()
+    .AllowAnyMethod()
+);
 
 app.Run();

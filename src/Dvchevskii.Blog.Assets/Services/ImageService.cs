@@ -1,4 +1,5 @@
-﻿using Amazon.S3;
+﻿using System.Collections.Concurrent;
+using Amazon.S3;
 using Amazon.S3.Model;
 using Dvchevskii.Blog.Entities.Files;
 using Dvchevskii.Blog.Infrastructure;
@@ -70,5 +71,37 @@ internal class ImageService(BlogDbContext dbContext, IAmazonS3 s3, IAuthenticati
         });
 
         return new Uri(strUrl);
+    }
+
+    public async Task<Dictionary<Guid, Uri>> GetPreSignedUrlList(IEnumerable<Guid> ids)
+    {
+        var images = await GetList(ids);
+
+        var result = new ConcurrentDictionary<Guid, Uri>();
+
+        var tasks = images.Select(async image =>
+        {
+            result[image.Id] = new Uri(await s3.GetPreSignedURLAsync(new GetPreSignedUrlRequest
+            {
+                Key = image.S3Key,
+                BucketName = DevBucketName,
+                Expires = DateTime.UtcNow.AddHours(1),
+                Protocol = Protocol.HTTP,
+            }));
+        }).ToArray();
+
+        await Task.WhenAll(tasks);
+
+        return result.ToDictionary(k => k.Key, v => v.Value);
+    }
+
+    public async Task<List<ImageAssetDto>> GetList(IEnumerable<Guid> ids)
+    {
+        var images = await dbContext.Images
+            .Where(img => ids.Contains(img.Id))
+            .Select(img => new ImageAssetDto(img.Id, img.S3Key, img.AuditInfo.CreatedAt, img.AuditInfo.CreatedBy))
+            .ToListAsync();
+
+        return images;
     }
 }

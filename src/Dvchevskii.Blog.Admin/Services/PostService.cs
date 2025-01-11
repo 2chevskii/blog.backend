@@ -209,4 +209,11 @@ internal class PostService(
             headerImageUrl
         );
     }
+
+    public async Task Delete(Guid id)
+    {
+        var post = await dbContext.Posts.FirstAsync(x => x.Id == id);
+        dbContext.Posts.Remove(post);
+        await dbContext.SaveChangesAsync();
+    }
 }

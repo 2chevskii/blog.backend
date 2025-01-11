@@ -1,4 +1,5 @@
-﻿using Dvchevskii.Blog.Entities.Authentication.Accounts;
+﻿using System.Reflection;
+using Dvchevskii.Blog.Entities.Authentication.Accounts;
 using Dvchevskii.Blog.Entities.Authentication.Users;
 using Dvchevskii.Blog.Entities.Common;
 using Dvchevskii.Blog.Entities.Files;
@@ -8,6 +9,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Dvchevskii.Blog.Infrastructure;
 
+[FilterByNonDeleted<User>]
+[FilterByNonDeleted<PasswordAccount>]
+[FilterByNonDeleted<Post>]
+[FilterByNonDeleted<Image>]
 public sealed class BlogDbContext(DbContextOptions<BlogDbContext> options)
     : DbContext(options), IDataProtectionKeyContext
 {
@@ -20,6 +25,10 @@ public sealed class BlogDbContext(DbContextOptions<BlogDbContext> options)
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        GetType().GetCustomAttributes<FilterByNonDeletedAttribute>()
+            .ToList()
+            .ForEach(a => a.OnModelCreating(modelBuilder));
+
         modelBuilder.Owned<AuditInfo>();
         modelBuilder.Entity<AuditLogEntry>()
             .HasOne(x => x.Actor)

@@ -1,0 +1,9 @@
+﻿<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="run all" type="CompoundRunConfigurationType">
+    <toRun name="Dvchevskii.Blog.Admin: http" type="LaunchSettings" />
+    <toRun name="Dvchevskii.Blog.Assets: http" type="LaunchSettings" />
+    <toRun name="Dvchevskii.Blog.Auth: http" type="LaunchSettings" />
+    <toRun name="Dvchevskii.Blog.Reader: http" type="LaunchSettings" />
+    <method v="2" />
+  </configuration>
+</component>

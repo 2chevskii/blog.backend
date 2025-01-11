@@ -13,4 +13,9 @@ internal class ImageAssetService(ImageAssetApiClient apiClient) : IImageAssetSer
     {
         return apiClient.GetUrl(id);
     }
+
+    public Task<Dictionary<Guid, Uri>> GetPreSignedUrlList(IEnumerable<Guid> ids)
+    {
+        return apiClient.GetUrls(ids);
+    }
 }

@@ -43,4 +43,14 @@ internal class ImageAssetApiClient(IHttpClientFactory httpClientFactory)
             throw;
         }
     }
+
+    public async Task<Dictionary<Guid, Uri>> GetUrls(IEnumerable<Guid> ids)
+    {
+        var response = await httpClientFactory.CreateClient(nameof(ImageAssetApiClient))
+            .PostAsJsonAsync("/images/url-list", ids);
+
+        var dictionary = await response.Content.ReadFromJsonAsync<Dictionary<Guid, string>>();
+
+        return dictionary!.ToDictionary(k => k.Key, v => new Uri(v.Value));
+    }
 }
