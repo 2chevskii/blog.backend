@@ -1,0 +1,46 @@
+name: environment deploy
+on:
+  workflow_dispatch:
+    inputs:
+      job:
+        description: Job to run
+        required: true
+        default: up
+        type: choice
+        options:
+          - up
+          - down
+      environment:
+        description: Environment to use
+        required: true
+        type: environment
+jobs:
+  up:
+    if: github.event.inputs.job == 'up'
+    environment: ${{ github.event.inputs.environment }}
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - run: ./scripts/build.sh EnvironmentInit
+    env:
+      DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+      DEPLOY_SSH_PORT: ${{ secrets.DEPLOY_SSH_PORT }}
+      DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+      SSH_USER: ${{ secrets.RUNNER_SSH_USER }}
+      SSH_PRIVATE_KEY: ${{ secrets.RUNNER_SSH_PRIVKEY }}
+      DB_ROOT_PASSWD: ${{ secrets.DB_ROOT_PASSWD }}
+      GH_ENVIRONMENT_NAME: ${{ github.event.inputs.environment }}
+  down:
+    if: github.event.inputs.job == 'down'
+    environment: ${{ github.event.inputs.environment }}
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - run: ./scripts/build.sh EnvironmentShutdown
+    env:
+      DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+      DEPLOY_SSH_PORT: ${{ secrets.DEPLOY_SSH_PORT }}
+      DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+      SSH_USER: ${{ secrets.RUNNER_SSH_USER }}
+      SSH_PRIVATE_KEY: ${{ secrets.RUNNER_SSH_PRIVKEY }}
+      GH_ENVIRONMENT_NAME: ${{ github.event.inputs.environment }}
