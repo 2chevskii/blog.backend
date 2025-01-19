@@ -1,12 +1,11 @@
 using System.IO;
 using System.Text;
-using System.Threading;
+using Components;
 using Nuke.Common;
-using Nuke.Common.CI.GitHubActions;
 using Renci.SshNet;
 using Serilog;
 
-class Build : NukeBuild
+class Build : NukeBuild, IInfrastructure
 {
     [Parameter] readonly string DeploymentHost;
     [Parameter] readonly int DeploymentSshPort;
@@ -18,7 +17,8 @@ class Build : NukeBuild
     [Parameter("Configuration to build - Default is 'Debug' (local) or 'Release' (server)")]
     readonly Configuration Configuration = IsLocalBuild ? Configuration.Debug : Configuration.Release;
 
-    string DockerComposeFilePath => DeploymentPath + "/docker-compose.yml";
+    public SshClient SshClient { get; private set; }
+    public ScpClient ScpClient { get; private set; }
 
     Target Clean => _ => _
         .Before(Restore)
@@ -37,54 +37,42 @@ class Build : NukeBuild
         {
         });
 
-    Target EnvironmentStart => _ => _.Executes(() =>
-    {
-    });
-
-    Target EnvironmentShutdown => _ => _.Executes(async () =>
-    {
-        Log.Information("Shutting down environment {EnvironmentName}...", GithubEnvironmentName);
-
-        using var sshClient = CreateSshClient();
-
-        await sshClient.ConnectAsync(CancellationToken.None);
-
-        Log.Information("Running docker compose stop");
-        sshClient.RunCommand(
-            $"docker compose -f {DockerComposeFilePath} stop -t 15"
-        );
-    });
-
     public static int Main() => Execute<Build>(x => x.Compile);
 
-    private SshClient CreateSshClient()
+    protected override void OnBuildInitialized()
     {
-        var client = new SshClient(
+        Log.Information("Initializing SSH and SCP clients for {User}@{Host}:{Port}",
+            DeploymentSshUser,
+            DeploymentHost,
+            DeploymentSshPort
+        );
+
+        var privateKey = new PrivateKeyFile(
+            new MemoryStream(Encoding.ASCII.GetBytes(DeploymentSshPrivateKey))
+        );
+
+
+        SshClient = new SshClient(
             new PrivateKeyConnectionInfo(
                 DeploymentHost,
                 DeploymentSshPort,
                 DeploymentSshUser,
-                CreatePrivateKey()
+                privateKey
             )
         );
-
-        return client;
-    }
-
-    private ScpClient CreateScpClient()
-    {
-        var client = new ScpClient(
+        ScpClient = new ScpClient(
             new PrivateKeyConnectionInfo(
                 DeploymentHost,
                 DeploymentSshPort,
                 DeploymentSshUser,
-                CreatePrivateKey()
+                privateKey
             )
         );
-
-        return client;
     }
 
-    private PrivateKeyFile CreatePrivateKey() =>
-        new PrivateKeyFile(new MemoryStream(Encoding.ASCII.GetBytes(DeploymentSshPrivateKey)));
+    protected override void OnBuildFinished()
+    {
+        SshClient.Dispose();
+        ScpClient.Dispose();
+    }
 }
