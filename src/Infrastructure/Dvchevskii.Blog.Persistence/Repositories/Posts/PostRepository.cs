@@ -1,4 +1,7 @@
-﻿using Dvchevskii.Blog.Core.Entities.Posts;
+﻿using System.Linq.Expressions;
+using Dvchevskii.Blog.Application.Contracts.ValueObjects.Pagination;
+using Dvchevskii.Blog.Application.Extensions.Pagination;
+using Dvchevskii.Blog.Core.Entities.Posts;
 using Dvchevskii.Blog.Core.Repositories.Posts;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,7 +11,30 @@ internal class PostRepository(BlogDbContext dbContext) : IPostRepository
 {
     public async Task<List<Post>> GetList(bool onlyPublished = true)
     {
-        var posts = await Query(onlyPublished).ToListAsync();
+        var posts = await Query(onlyPublished)
+            .OrderByDescending(post => post.AuditInfo.CreatedAt)
+            .ToListAsync();
+        return posts;
+    }
+
+    public async Task<LimitedQueryResult<Post>> GetList(LimitedQuerySettings settings, bool onlyPublished)
+    {
+        var posts = await Query(onlyPublished)
+            .OrderByDescending(post => post.AuditInfo.CreatedAt)
+            .ToLimitedResult(settings);
+        return posts;
+    }
+
+    public async Task<LimitedQueryResult<T>> GetList<T>(
+        LimitedQuerySettings settings,
+        bool onlyPublished,
+        Expression<Func<Post, T>> projectionExpression
+    )
+    {
+        var posts = await Query(onlyPublished)
+            .OrderByDescending(post => post.AuditInfo.CreatedAt)
+            .Select(projectionExpression)
+            .ToLimitedResult(settings);
         return posts;
     }
 
@@ -53,6 +79,11 @@ internal class PostRepository(BlogDbContext dbContext) : IPostRepository
 
         var slugs = await query.Select(post => post.Slug).ToListAsync();
         return slugs;
+    }
+
+    public Task<Post> GetBySlug(string slug, bool onlyPublished)
+    {
+        return Query(onlyPublished).FirstAsync(x => x.Slug == slug);
     }
 
     private IQueryable<Post> Query(bool onlyPublished)

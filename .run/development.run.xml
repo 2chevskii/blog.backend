@@ -1,7 +1,9 @@
 ﻿<component name="ProjectRunConfigurationManager">
   <configuration default="false" name="development" type="CompoundRunConfigurationType">
+    <toRun name="Dvchevskii.Blog.Api.Admin: development" type="LaunchSettings" />
     <toRun name="Dvchevskii.Blog.Api.Assets: development" type="LaunchSettings" />
     <toRun name="Dvchevskii.Blog.Api.Auth: development" type="LaunchSettings" />
+    <toRun name="Dvchevskii.Blog.Reader: development" type="LaunchSettings" />
     <method v="2" />
   </configuration>
 </component>

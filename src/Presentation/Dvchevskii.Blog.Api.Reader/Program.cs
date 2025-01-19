@@ -1,6 +1,4 @@
-using Dvchevskii.Blog.Api.Auth.Services;
 using Dvchevskii.Blog.Application;
-using Dvchevskii.Blog.Application.Extensions;
 using Dvchevskii.Blog.Application.Extensions.Mvc;
 using Dvchevskii.Blog.Infrastructure;
 
@@ -13,16 +11,13 @@ builder.Services.ConfigureLowercaseRoutes()
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-ApplicationConfigurator.ConfigureServices(builder.Services);
-builder.Services.AddSetupHandlers();
-
 builder.Services.AddBlogDbContext(
         builder.Configuration.GetConnectionString("MySql") ??
-        throw new Exception("MySql connection string not found")
+        throw new Exception("mysql connection string is missing")
     ).AddRepositories()
     .ConfigurePersistedDataProtection();
 
-builder.Services.AddScoped<UserProfileService>();
+ApplicationConfigurator.ConfigureServices(builder.Services);
 
 var app = builder.Build();
 
@@ -33,10 +28,11 @@ ApplicationConfigurator.Configure(app);
 
 app.MapControllers();
 
-app.UseCors(cors => cors.WithOrigins("http://localhost:3001")
-    .AllowCredentials()
-    .AllowAnyHeader()
-    .AllowAnyMethod()
+app.UseCors(
+    cors => cors.WithOrigins("http://localhost:3004")
+        .AllowCredentials()
+        .AllowAnyMethod()
+        .AllowAnyHeader()
 );
 
 app.Run();

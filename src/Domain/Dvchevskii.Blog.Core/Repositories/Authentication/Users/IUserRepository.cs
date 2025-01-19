@@ -11,4 +11,7 @@ public interface IUserRepository
     Task<User> Create(User user);
     Task<User> Update(User user);
     Task Delete(User user);
+    Task<Guid?> GetAvatarImageId(Guid userId);
+    Task<Dictionary<Guid, Guid?>> GetAvatarImageIdList(IEnumerable<Guid> userIds);
+    Task<List<User>> GetList(IEnumerable<Guid> ids);
 }

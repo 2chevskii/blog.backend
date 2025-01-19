@@ -5,13 +5,13 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{E15B34D0-0214-4AAF-B87F-1F7AC7E55D0A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dvchevskii.Blog.Admin", "src\Presentation\Dvchevskii.Blog.Admin\Dvchevskii.Blog.Admin.csproj", "{5D983554-B0BD-4742-ABE1-B2283A70C308}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dvchevskii.Blog.Api.Admin", "src\Presentation\Dvchevskii.Blog.Api.Admin\Dvchevskii.Blog.Api.Admin.csproj", "{5D983554-B0BD-4742-ABE1-B2283A70C308}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dvchevskii.Blog.Auth", "src\Presentation\Dvchevskii.Blog.Api.Auth\Dvchevskii.Blog.Api.Auth.csproj", "{C8389792-8114-4D61-AB5D-118C6940EBEB}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dvchevskii.Blog.Core", "src\Domain\Dvchevskii.Blog.Core\Dvchevskii.Blog.Core.csproj", "{DB4E0144-7D14-4412-AABE-593CB2927C6F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dvchevskii.Blog.Reader", "src\Presentation\Dvchevskii.Blog.Reader\Dvchevskii.Blog.Reader.csproj", "{710A8176-D43E-4B36-ADAE-030A5E306A78}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dvchevskii.Blog.Api.Reader", "src\Presentation\Dvchevskii.Blog.Api.Reader\Dvchevskii.Blog.Api.Reader.csproj", "{710A8176-D43E-4B36-ADAE-030A5E306A78}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dvchevskii.Blog.Shared", "src\Dvchevskii.Blog.Shared\Dvchevskii.Blog.Shared.csproj", "{6A9F3633-F6B4-4FE3-A8C4-F23173E2D648}"
 EndProject

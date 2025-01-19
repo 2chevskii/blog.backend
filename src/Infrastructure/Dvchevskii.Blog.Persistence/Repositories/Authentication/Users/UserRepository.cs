@@ -46,4 +46,28 @@ internal class UserRepository(BlogDbContext dbContext) : IUserRepository
         dbContext.Users.Remove(user);
         await dbContext.SaveChangesAsync();
     }
+
+    public async Task<Guid?> GetAvatarImageId(Guid userId)
+    {
+        var imageId = await dbContext.Users.Where(x => x.Id == userId)
+            .Select(x => x.AvatarImageId)
+            .FirstOrDefaultAsync();
+
+        return imageId;
+    }
+
+    public async Task<List<User>> GetList(IEnumerable<Guid> ids)
+    {
+        var users = await dbContext.Users.Where(user => ids.Contains(user.Id))
+            .ToListAsync();
+
+        return users;
+    }
+
+    public Task<Dictionary<Guid, Guid?>> GetAvatarImageIdList(IEnumerable<Guid> userIds)
+    {
+        return dbContext.Users
+            .Where(user => userIds.Contains(user.Id))
+            .ToDictionaryAsync(k => k.Id, v => v.AvatarImageId);
+    }
 }

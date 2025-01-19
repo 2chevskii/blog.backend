@@ -17,6 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Application\Dvchevskii.Blog.Application\Dvchevskii.Blog.Application.csproj" />
     <ProjectReference Include="..\..\Domain\Dvchevskii.Blog.Core\Dvchevskii.Blog.Core.csproj"/>
   </ItemGroup>
 

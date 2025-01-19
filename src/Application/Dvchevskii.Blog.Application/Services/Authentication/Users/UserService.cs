@@ -8,6 +8,19 @@ namespace Dvchevskii.Blog.Application.Services.Authentication.Users;
 
 internal class UserService(IUserRepository repository) : IUserService
 {
+    public async Task<UserDto> Get(Guid id)
+    {
+        var user = await repository.GetById(id);
+
+        return UserMapper.MapDto(user);
+    }
+
+    public async Task<List<UserDto>> GetList(IEnumerable<Guid> ids)
+    {
+        var users = await repository.GetList(ids);
+        return users.ConvertAll(UserMapper.MapDto);
+    }
+
     public Task<bool> ExistsByUsername(string username)
     {
         return repository.ExistsByUsername(username);

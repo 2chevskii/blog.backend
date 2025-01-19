@@ -53,6 +53,13 @@ public static class ApplicationConfigurator
         serviceCollection.AddHostedService<SetupRunner>();
 
         serviceCollection.AddScoped<IImageServiceClient, ImageServiceClient>();
+        serviceCollection.AddOptions<ImageServiceClientOptions>()
+            .Configure(options => options.Url = new Uri("http://localhost:3102/"));
+
+        serviceCollection.AddScoped<IPostAdminService, PostAdminService>();
+        serviceCollection.AddScoped<IUserAvatarService, UserAvatarService>();
+
+        serviceCollection.AddScoped<IPostReaderService, PostReaderService>();
     }
 
     public static void Configure(IApplicationBuilder app)
