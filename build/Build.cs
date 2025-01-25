@@ -1,17 +1,17 @@
 using System.IO;
 using System.Text;
-using Components;
-using Nuke.Common;
+using Dvchevskii.Blog.Build.Components;
 using Renci.SshNet;
 using Serilog;
 
-class Build : NukeBuild, IInfrastructure
+namespace Dvchevskii.Blog.Build;
+
+class Build : NukeBuild, IInfrastructure, ICompile
 {
     [Parameter] readonly string DeploymentHost;
     [Parameter] readonly int DeploymentSshPort;
     [Parameter] readonly string DeploymentSshUser;
     [Parameter] readonly string DeploymentSshPrivateKey;
-    [Parameter] readonly string DeploymentPath;
     [Parameter] readonly string GithubEnvironmentName;
 
     [Parameter("Configuration to build - Default is 'Debug' (local) or 'Release' (server)")]
@@ -20,27 +20,16 @@ class Build : NukeBuild, IInfrastructure
     public SshClient SshClient { get; private set; }
     public ScpClient ScpClient { get; private set; }
 
-    Target Clean => _ => _
-        .Before(Restore)
-        .Executes(() =>
-        {
-        });
 
-    Target Restore => _ => _
-        .Executes(() =>
-        {
-        });
-
-    Target Compile => _ => _
-        .DependsOn(Restore)
-        .Executes(() =>
-        {
-        });
-
-    public static int Main() => Execute<Build>(x => x.Compile);
+    public static int Main() => Execute<Build>();
 
     protected override void OnBuildInitialized()
     {
+        if (IsLocalBuild)
+        {
+            return;
+        }
+
         Log.Information("Initializing SSH and SCP clients for {User}@{Host}:{Port}",
             DeploymentSshUser,
             DeploymentHost,
@@ -50,7 +39,6 @@ class Build : NukeBuild, IInfrastructure
         var privateKey = new PrivateKeyFile(
             new MemoryStream(Encoding.ASCII.GetBytes(DeploymentSshPrivateKey))
         );
-
 
         SshClient = new SshClient(
             new PrivateKeyConnectionInfo(
@@ -72,6 +60,11 @@ class Build : NukeBuild, IInfrastructure
 
     protected override void OnBuildFinished()
     {
+        if (IsLocalBuild)
+        {
+            return;
+        }
+
         SshClient.Dispose();
         ScpClient.Dispose();
     }

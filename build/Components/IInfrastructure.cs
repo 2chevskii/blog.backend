@@ -3,152 +3,235 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using Extensions;
-using Nuke.Common;
+using Dvchevskii.Blog.Build.Extensions;
 using Nuke.Common.IO;
+using Nuke.Common.Tooling;
 using Nuke.Common.Utilities;
 using Serilog;
 
-// ReSharper disable UnusedMember.Global
+namespace Dvchevskii.Blog.Build.Components;
 
-// ReSharper disable AllUnderscoreLocalParameterName
-
-namespace Components;
-
-interface IInfrastructure : INukeBuild, IHasSshClient, IHasScpClient
+interface IInfrastructure : IHasSshClient, IHasScpClient, IHasRepositoryFiles, IHasDeploymentFiles
 {
-    [Parameter] AbsolutePath DeploymentPath => TryGetValue(() => DeploymentPath);
-
-    AbsolutePath InfrastructureDirectory => DeploymentPath / "infrastructure";
-    AbsolutePath DockerComposePath => InfrastructureDirectory / "docker-compose.yml";
-    AbsolutePath MySqlDirectory => InfrastructureDirectory / "mysql";
-    AbsolutePath MySqlInitDirectory => MySqlDirectory / "init.d";
-    AbsolutePath MySqlDataDirectory => MySqlDirectory / "data";
+    [Parameter] string MySqlRootPasswd => TryGetValue(() => MySqlRootPasswd);
+    [Parameter] string MySqlBackendPasswd => TryGetValue(() => MySqlBackendPasswd);
 
     Target EnvDeploy => _ => _
         .Requires(() => DeploymentPath)
+        .OnlyWhenStatic(() => IsServerBuild)
         .Executes(() =>
         {
-            SshClient.EnsureConnected();
-            ScpClient.EnsureConnected();
-
-            CreateInfrastructureDirectories();
+            CreateRequiredDirectories();
             DeployDockerCompose();
             DeployDatabaseInitScripts();
         });
 
     Target EnvStart => _ => _
-        .DependsOn(EnvDeploy)
+        .TryDependsOn<IInfrastructure>(c => c.EnvDeploy)
         .Executes(() =>
         {
-            SshClient.EnsureConnected();
+            // Use SSH commands for remote builds
+            if (IsLocalBuild)
+            {
+                return;
+            }
 
-            SshClient.RunCommand($"docker compose -f {DockerComposePath:sn} up -d");
+            RunSshCommandAndLog(GetDockerComposeCommand("up -d"));
+        }, () =>
+        {
+            // Use local commands for local builds
+            if (IsServerBuild)
+            {
+                return;
+            }
+
+            ProcessTasks.StartProcess("docker", $"compose -f {RepositoryFiles.DockerComposeLocal:sn} up -d")
+                .AssertZeroExitCode();
         });
 
     Target EnvStop => _ => _.Executes(() =>
     {
-        SshClient.EnsureConnected();
+        if (IsLocalBuild)
+        {
+            return;
+        }
 
-        SshClient.RunCommand($"docker compose -f {DockerComposePath:sn} stop");
+        RunSshCommandAndLog(GetDockerComposeCommand("stop"));
+    }, () =>
+    {
+        if (IsServerBuild)
+        {
+            return;
+        }
+
+        ProcessTasks.StartProcess("docker", $"compose -f {RepositoryFiles.DockerComposeLocal:sn} stop")
+            .AssertZeroExitCode();
     });
 
     Target EnvTeardown => _ => _.Executes(() =>
     {
-        SshClient.EnsureConnected();
+        if (IsLocalBuild)
+        {
+            return;
+        }
 
-        SshClient.RunCommand($"docker compose -f {DockerComposePath:sn} down");
+        RunSshCommandAndLog(GetDockerComposeCommand("down"));
+    }, () =>
+    {
+        if (IsServerBuild)
+        {
+            return;
+        }
+
+        ProcessTasks.StartProcess("docker", $"compose -f {RepositoryFiles.DockerComposeLocal:sn} down")
+            .AssertZeroExitCode();
     });
 
-    void CreateInfrastructureDirectories()
+    private void CreateRequiredDirectories()
     {
-        List<AbsolutePath> directoriesToCreate =
-            [InfrastructureDirectory, MySqlDirectory, MySqlInitDirectory, MySqlDataDirectory];
-
-        Log.Information("CreateInfrastructureDirectories: {Paths}", directoriesToCreate);
-
-        directoriesToCreate.ForEach(directory =>
+        foreach (var path in DeploymentFiles.RequiredDirectories)
         {
-            var directoryExists = SshClient.RunCommand($"stat {directory:sn}").ExitStatus == 0;
-
-            if (directoryExists)
+            if (CheckIfRemoteFileExists(path))
             {
-                Log.Information("Directory {Path:sn} exists", directory);
-                return;
+                continue;
             }
 
-            Log.Information("Creating directory {Path:sn}", directory);
-            SshClient.RunCommand($"mkdir -p {directory:sn}");
-        });
+            RunSshCommandAndLog($"mkdir -p {path:sn}");
+        }
     }
 
     void DeployDockerCompose()
     {
-        var localDockerComposePath = RootDirectory / "docker" / "docker-compose.yml";
-        var localDockerComposeMd5 = localDockerComposePath.GetFileHash();
-
-        var remoteDockerComposeExists = SshClient.RunCommand($"stat {DockerComposePath:sn}").ExitStatus == 0;
-
-        if (remoteDockerComposeExists)
+        if (CheckIfRemoteFileExists(DeploymentFiles.DockerCompose))
         {
-            Log.Information("Remote docker compose file exists");
-
-            var remoteDockerComposeMd5 =
-                SshClient.RunCommand($"md5sum {DockerComposePath:sn}")
-                    .Result
-                    .Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-                    .First();
-
-            Log.Information(
-                "Local docker compose MD5: {LocalHash} Remote docker compose MD5: {RemoteHash}",
-                localDockerComposeMd5,
-                remoteDockerComposeMd5
-            );
-
-            if (localDockerComposeMd5.Equals(remoteDockerComposeMd5, StringComparison.OrdinalIgnoreCase))
+            if (CheckIfRemoteFileMatchesMd5(DeploymentFiles.DockerCompose, RepositoryFiles.DockerCompose.GetFileHash()))
             {
-                Log.Information("Local and remote docker compose hashes match");
                 return;
             }
 
-            Log.Information("Local and remote docker compose hashes do not match");
-
-            Log.Information("Removing outdated docker compose at {Target}", DockerComposePath);
-            SshClient.RunCommand($"rm {DockerComposePath:sn}");
+            RunSshCommandAndLog($"rm {DeploymentFiles.DockerCompose:sn}");
         }
 
-        Log.Information("Uploading docker compose from {Src} to {Target}", localDockerComposePath, DockerComposePath);
-        ScpClient.Upload(localDockerComposePath.ToFileInfo(), DockerComposePath);
+        UploadFileThroughScpAndLog(RepositoryFiles.DockerCompose, DeploymentFiles.DockerCompose);
     }
 
     void DeployDatabaseInitScripts()
     {
-        var localInitScriptsDir = RootDirectory / "scripts" / "mysql";
-        var initScripts = localInitScriptsDir.GetFiles().ToList();
-
-        Log.Information("Found {Count} database init scripts", initScripts.Count);
-
-        initScripts.ForEach(script =>
+        foreach (var script in RepositoryFiles.MySqlInitScripts)
         {
-            var content = script.ReadAllText();
+            var scriptText = RenderDbInitScript(script.ReadAllText());
 
-            var contentRendered = content.ReplaceRegex(@"\$([A-Z0-9_]+)", eval =>
+            var targetPath = DeploymentFiles.GetMySqlInitScriptPath(script.ToFileInfo());
+
+            if (CheckIfRemoteFileExists(targetPath))
             {
-                var varName = eval.Groups[1].Value;
+                if (CheckIfRemoteFileMatchesMd5(targetPath, scriptText.GetMD5Hash()))
+                {
+                    continue;
+                }
 
-                var varValue = EnvironmentInfo.GetVariable(varName);
+                RunSshCommandAndLog($"rm {targetPath:sn}");
+            }
 
-                return varValue;
-            });
-
-            var targetPath = MySqlInitDirectory / script.Name;
-
-            Log.Information("Deploying script {Src} to {Target}", script, targetPath);
-            Log.Information("Script contents:\n{Content}", contentRendered);
-
-            using var contentStream = new MemoryStream(Encoding.UTF8.GetBytes(contentRendered), writable: false);
-
-            ScpClient.Upload(contentStream, targetPath);
-        });
+            using var scriptTextStream = new MemoryStream(
+                Encoding.UTF8.GetBytes(scriptText),
+                writable: false
+            );
+            UploadFileThroughScpAndLog(scriptTextStream, targetPath);
+        }
     }
+
+    #region Utility
+
+    void UploadFileThroughScpAndLog(AbsolutePath source, AbsolutePath target)
+    {
+        ScpClient.EnsureConnected();
+        ScpClient.Upload(source.ToFileInfo(), target);
+        Log.Information("Uploaded file {Source} to {Target}", source, target);
+    }
+
+    void UploadFileThroughScpAndLog(Stream source, AbsolutePath target)
+    {
+        ScpClient.EnsureConnected();
+        ScpClient.Upload(source, target);
+        Log.Information("Uploaded file from stream ({StreamLength} bytes) to {Target}", source.Length, target);
+    }
+
+    void RunSshCommandAndLog(string command)
+    {
+        Log.Verbose("Running SSH command: {Command}", command);
+        SshClient.EnsureConnected();
+        var sshCommand = SshClient.RunCommand(command);
+        Log.Information("SSH command {Command} output ({ExitCode}): {Output}",
+            command,
+            sshCommand.ExitStatus,
+            sshCommand.Result
+        );
+    }
+
+    string GetDockerComposeEnvVars()
+    {
+        var envVars = new Dictionary<string, string>
+        {
+            { "MYSQL_ROOT_PASSWD", MySqlRootPasswd.SingleQuoteIfNeeded() },
+            { "MYSQL_INIT_SCRIPTS_DIR", DeploymentFiles.MySqlInitDbDirectory.ToString("sn") },
+            { "MYSQL_DATA_DIR", DeploymentFiles.MySqlDataDirectory.ToString("sn") }
+        };
+
+        return envVars.Select(pair => $"{pair.Key}={pair.Value}")
+            .JoinSpace();
+    }
+
+    string GetDockerComposeCommand(string command)
+    {
+        var envVars = GetDockerComposeEnvVars();
+        var commandBase = GetDockerComposeCommandBase();
+
+        return $"{envVars} {commandBase} {command}";
+    }
+
+    string GetDockerComposeCommandBase() => $"docker compose -f {DeploymentFiles.DockerCompose:sn}";
+
+
+    bool CheckIfRemoteFileExists(AbsolutePath path)
+    {
+        Log.Verbose("Checking if remote file {Path} exists", path);
+
+        SshClient.EnsureConnected();
+        var exists = SshClient.RunCommand($"stat {path:sn}").ExitStatus == 0;
+
+        Log.Information("Remote file {Path} {Exists}", path, exists ? "exists" : "does not exist");
+
+        return exists;
+    }
+
+    bool CheckIfRemoteFileMatchesMd5(AbsolutePath path, string md5)
+    {
+        Log.Verbose("Checking if remote file {Path} matches md5 {Md5}", path, md5);
+
+        SshClient.EnsureConnected();
+        var remoteFileMd5 = SshClient.RunCommand($"md5sum {path:sn}")
+            .Result
+            .Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .First();
+
+        var matches = remoteFileMd5 == md5;
+
+        Log.Information(
+            "Remote file {Path} has md5 {RemoteMd5} which {DoesMatch} match given md5 {GivenMd5}", path,
+            remoteFileMd5,
+            matches ? "does" : "does not",
+            md5
+        );
+
+        return matches;
+    }
+
+
+    string RenderDbInitScript(string script)
+    {
+        return script.Replace("$MYSQL_BACKEND_PASSWD", MySqlBackendPasswd);
+    }
+
+    #endregion
 }

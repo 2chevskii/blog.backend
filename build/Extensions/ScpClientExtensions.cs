@@ -1,8 +1,6 @@
-﻿using System.Threading;
-using System.Threading.Tasks;
-using Renci.SshNet;
+﻿using Renci.SshNet;
 
-namespace Extensions;
+namespace Dvchevskii.Blog.Build.Extensions;
 
 static class ScpClientExtensions
 {

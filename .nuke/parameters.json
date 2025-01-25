@@ -1,4 +1,5 @@
 {
   "$schema": "build.schema.json",
+  "Verbosity": "Verbose",
   "Solution": "Dvchevskii.Blog.sln"
 }

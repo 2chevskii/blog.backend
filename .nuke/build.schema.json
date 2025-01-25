@@ -24,11 +24,11 @@
     "ExecutableTarget": {
       "type": "string",
       "enum": [
-        "Clean",
         "Compile",
         "EnvDeploy",
         "EnvStart",
         "EnvStop",
+        "EnvTeardown",
         "Restore"
       ]
     },
@@ -129,6 +129,16 @@
         },
         "GithubEnvironmentName": {
           "type": "string"
+        },
+        "MySqlBackendPasswd": {
+          "type": "string"
+        },
+        "MySqlRootPasswd": {
+          "type": "string"
+        },
+        "Solution": {
+          "type": "string",
+          "description": "Path to a solution file that is automatically loaded"
         }
       }
     },

@@ -1,13 +1,13 @@
 services:
   db:
     image: mysql:9.1.0
+    container_name: dvchevskii-blog-db
     environment:
-      MYSQL_ROOT_PASSWORD: $MYSQL_ROOT_PASSWD
+      MYSQL_ROOT_PASSWORD: rootpasswd
       MYSQL_INITDB_SKIP_TZINFO: 1
     ports:
       - 33306:3306
     volumes:
       - type: bind
-        source: $MYSQL_INIT_SCRIPTS_DIR
+        source: ../scripts/mysql/initdb.d
         target: /docker-entrypoint-initdb.d
-      - $MYSQL_DATA_DIR:/var/lib/mysql

@@ -21,22 +21,23 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-      - run: ./scripts/build.sh EnvironmentInit
+      - run: ./scripts/build.sh EnvStart
     env:
-      DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
-      DEPLOY_SSH_PORT: ${{ secrets.DEPLOY_SSH_PORT }}
-      DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
-      SSH_USER: ${{ secrets.RUNNER_SSH_USER }}
-      SSH_PRIVATE_KEY: ${{ secrets.RUNNER_SSH_PRIVKEY }}
-      DB_ROOT_PASSWD: ${{ secrets.DB_ROOT_PASSWD }}
-      GH_ENVIRONMENT_NAME: ${{ github.event.inputs.environment }}
+      DEPLOYMENT_HOST: ${{ secrets.DEPLOYMENT_HOST }}
+      DEPLOYMENT_SSH_PORT: ${{ secrets.DEPLOYMENT_SSH_PORT }}
+      DEPLOYMENT_SSH_USER: ${{ secrets.DEPLOYMENT_SSH_USER }}
+      DEPLOYMENT_SSH_PRIVATE_KEY: ${{ secrets.DEPLOYMENT_SSH_PRIVATE_KEY }}
+      DEPLOYMENT_PATH: ${{ secrets.DEPLOYMENT_PATH }}
+      ENVIRONMENT_NAME: ${{ github.event.inputs.environment }}
+      MYSQL_ROOT_PASSWD: ${{ secrets.MYSQL_ROOT_PASSWD }}
+      MYSQL_BACKEND_PASSWD: ${{ secrets.MYSQL_BACKEND_PASSWD }}
   down:
     if: github.event.inputs.job == 'down'
     environment: ${{ github.event.inputs.environment }}
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-      - run: ./scripts/build.sh EnvironmentShutdown
+      - run: ./scripts/build.sh EnvStop
     env:
       DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
       DEPLOY_SSH_PORT: ${{ secrets.DEPLOY_SSH_PORT }}

@@ -1,0 +1,2 @@
+﻿CREATE USER IF NOT EXISTS 'backend' @'%' IDENTIFIED BY '$MYSQL_BACKEND_PASSWD';
+GRANT ALL PRIVILEGES ON blog_development.* TO 'backend' @'%';

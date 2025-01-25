@@ -1,6 +1,6 @@
 ﻿using Renci.SshNet;
 
-namespace Components;
+namespace Dvchevskii.Blog.Build.Components;
 
 interface IHasSshClient
 {
