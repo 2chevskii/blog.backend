@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-      - run: ./scripts/build.sh EnvStart
+      - run: ./build.sh EnvStart
     env:
       DEPLOYMENT_HOST: ${{ secrets.DEPLOYMENT_HOST }}
       DEPLOYMENT_SSH_PORT: ${{ secrets.DEPLOYMENT_SSH_PORT }}
@@ -37,7 +37,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-      - run: ./scripts/build.sh EnvStop
+      - run: ./build.sh EnvStop
     env:
       DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
       DEPLOY_SSH_PORT: ${{ secrets.DEPLOY_SSH_PORT }}
